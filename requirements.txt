@@ -1,7 +1,8 @@
-twilio
-flask
-gevent
-gevent-websocket
+twilio==7.17.0
+Flask==2.0.3
+Flask-Sockets==0.2.1
+gevent==21.12.0
+gevent-websocket==0.10.1
 python-dotenv
 google-cloud-speech
 google-cloud-texttospeech
@@ -9,6 +10,8 @@ langchain
 langchain-google-genai
 faiss-cpu
 tiktoken
-langchain_community
+google-auth
+google-api-python-client
+google-cloud-storage
+langchain-community
 unstructured
-simple-websocket

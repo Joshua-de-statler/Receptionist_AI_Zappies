@@ -118,5 +118,5 @@ git commit -m "__commit_name__"
 **When pusing local changes to github**
 
 ```bash
-git push origin main
+git push origin2 main
 ```
