@@ -1,0 +1,16 @@
+# Virtual Environment
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Credentials
+*.json
+
+# FAISS Index
+faiss_index/
+
+# Python cache
+__pycache__/
+*.pyc

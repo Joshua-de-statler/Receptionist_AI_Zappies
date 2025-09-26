@@ -1,0 +1,14 @@
+twilio
+flask
+gevent
+gevent-websocket
+python-dotenv
+google-cloud-speech
+google-cloud-texttospeech
+langchain
+langchain-google-genai
+faiss-cpu
+tiktoken
+langchain_community
+unstructured
+simple-websocket
