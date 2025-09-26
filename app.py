@@ -3,7 +3,7 @@ import json
 import os
 
 from flask import Flask, request
-from flask_sockets import Sockets
+from simple_websocket import Server as WebSocketServer
 from twilio.twiml.voice_response import VoiceResponse, Start
 from twilio.rest import Client
 from dotenv import load_dotenv
@@ -15,7 +15,6 @@ from bot_logic import load_config, get_grounded_ai_response, text_to_speech
 load_dotenv()
 
 app = Flask(__name__)
-sockets = Sockets(app)
 
 # --- Load Credentials ---
 credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
@@ -46,9 +45,31 @@ def incoming_call():
 
     return str(response), 200, {'Content-Type': 'text/xml'}
 
-@sockets.route('/audiostream')
-def audiostream(ws):
-    """Handles the real-time audio stream and AI interaction."""
+@app.route('/audiostream')
+def audiostream():
+    """Handles the real-time audio stream using simple-websocket."""
+    if 'wsgi.websocket' not in request.environ:
+                print("========================================")
+                print(f"==================={request}=====================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print("========================================")
+                print(f"==================={request.environ}=====================")
+                print("========================================")
+                return f'This endpoint requires a WebSocket connection', 400
+    
+    ws = request.environ['wsgi.websocket']
     print("WebSocket connection established.")
     call_sid, stream_sid, client_config = None, None, None
 
@@ -57,7 +78,11 @@ def audiostream(ws):
         while not ws.closed:
             message = ws.receive()
             if message is None: continue
+            if isinstance(message, bytes):
+                message = message.decode('utf-8')
+            
             data = json.loads(message)
+            print("=============================HERE======================")
 
             if data['event'] == 'start':
                 call_sid = data['start']['callSid']
@@ -103,24 +128,29 @@ def audiostream(ws):
                     forward_response = VoiceResponse()
                     forward_response.dial(client_config['forwarding_number'])
                     twilio_client.calls(call_sid).update(twiml=str(forward_response))
-                    ws.close()
                     break
+                
                 audio_mulaw = text_to_speech(ai_response_text, client_config['voice_name'])
-                ws.send(json.dumps({
+                
+                media_response = {
                     "event": "media",
                     "streamSid": stream_sid,
                     "media": {"payload": base64.b64encode(audio_mulaw).decode('utf-8')}
-                }))
+                }
+                ws.send(json.dumps(media_response))
+                
                 print("Sent audio response to Twilio.")
     except Exception as e:
         print(f"An error occurred in the audio stream: {e}")
     finally:
-        print("WebSocket connection closed.")
+        print("WebSocket connection closing.")
+        if not ws.closed:
+            ws.close()
+    return ""
 
 if __name__ == '__main__':
-    from gevent import pywsgi
-    from geventwebsocket.handler import WebSocketHandler
+    from gevent.pywsgi import WSGIServer
     
     print("Starting server on port 5000...")
-    server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
+    server = WSGIServer(('', 5000), app)
     server.serve_forever()
